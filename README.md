@@ -15,7 +15,7 @@ It contains:
   Source code for generating the AS2Web dataset from WHOIS, IPinfo, PeeringDB, and Perplexity AI.
 
 - 🧠 `website_classification_prompts/`  
-  The AI prompts used for classifying business sectors based on website content.
+  The AI prompts used for classifying business sectors based on website presence.
 
 - 📊 `as2web_as2biz_analysis.ipynb`  
   A Jupyter notebook for analyzing the AS2Web and AS2Biz datasets and reproducing key statistics reported in the paper.
@@ -31,7 +31,7 @@ We provide detailed step-by-step instructions in:
 This guide walks you through:
 
 - Downloading and querying WHOIS, IPinfo, and PeeringDB data
-- Running Perplexity AI queries for ASes without accessible websites
+- Running Perplexity AI queries
 - Producing the final `as2web.json` dataset
 
 ---
