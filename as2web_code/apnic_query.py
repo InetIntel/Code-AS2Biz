@@ -3,6 +3,7 @@ import json
 import time
 import argparse
 import os
+from utils import domain_filter_list
 
 # Base URL for APNIC RDAP
 RDAP_URL = "https://rdap.apnic.net/autnum/"
@@ -46,8 +47,14 @@ def main(asn_list, output_file):
         rdap_data = query_rdap(asn)
         #print(rdap_data)
         emails = extract_emails(rdap_data)
-        #print(emails)
-        all_results[asn] = list(emails)
+        domains = set()
+        for email in emails:
+            if "@" in email:
+                domain = email.split("@")[1]
+                if domain not in domain_filter_list:
+                    domains.add(domain)
+        if domains:
+            all_results[asn] = list(domains)
 
         # Save progress every 5 ASNs
         if i % 5 == 0:
@@ -77,6 +84,6 @@ if __name__ == "__main__":
     asn_list = [key for key, value in scope.items() if value == "apnic"]
 
     # Output file to save results
-    output_file = f"./data/apnic/{date}/apnic_asn_email_data.json"
+    output_file = f"./data/apnic/{date}/as2domains.json"
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     main(asn_list, output_file)

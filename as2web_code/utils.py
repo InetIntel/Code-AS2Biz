@@ -10,11 +10,9 @@ def find_relevant_domain(as_name, org_name, domains):
     for domain in domains:
         score = 0.5 * fuzz.partial_ratio(domain, as_name) + 0.5 * fuzz.partial_ratio(domain, org_name)
         scores.append((domain, score))
-
     return sorted(scores, key=lambda x: x[1], reverse=True)[0][0] if scores else None
 
 
-# Placeholder list — you should fill this with your actual bad domains
 domain_filter_list = ['ukr.net', 'abv.bg', 'hotmail.com.br', 'inbox.ru', 'live.com', 'vnnic.vn', 
                       'mail.ru', 'foxmail.com', 'icloud.com', 'list.ru', 'mail.com', 'irinn.in', 
                       'meta.ua', 'protonmail.com', 'outlook.com.br', 'qq.com', 'cnic.cn', 'yahoo.in', 

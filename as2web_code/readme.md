@@ -10,8 +10,8 @@ This directory contains Python scripts for generating the **AS2Web dataset**, wh
 
 Please follow the instructions below to download, query, and process raw WHOIS data. The final goal is to generate two output files for each RIR:
 
-- `as2domain.json`: a mapping from AS number to the most relevant domain  
-- `as_info.json`: a dictionary containing the AS name and organization name for each AS
+- `as2domains.json`: a mapping from AS number to the filtered domains
+- `as_info.json`: a dictionary containing the AS name, organization name, and country for each AS
 
 In each step, you may need to **manually download** bulk WHOIS data.  
 Please ensure the files are saved using the appropriate naming and folder structure.
@@ -43,7 +43,7 @@ data/
 
 - Manually download the AFRINIC bulk Whois file: [`https://ftp.afrinic.net/pub/dbase/afrinic.db.gz`](https://ftp.afrinic.net/pub/dbase/afrinic.db.gz)
 
-- Then, run the extraction script to generate `as2domain.json` and `as_info.json`:
+- Then, run the extraction script to generate `as2domains.json` and `as_info.json`:
 
 ```bash
 python afrinic_extract.py --date 250101
@@ -57,7 +57,7 @@ python afrinic_extract.py --date 250101
   - orgs.txt
   - pocs.txt
 
-- Then, run the extraction script to generate `as2domain.json` and `as_info.json`:
+- Then, run the extraction script to generate `as2domains.json` and `as_info.json`:
 
 ```bash
 python arin_extract.py --date 250101
@@ -65,11 +65,17 @@ python arin_extract.py --date 250101
 
 #### (3) APNIC
 
-- First, manually download two bulk Whois files, which are later used to extract `as_info.json`: [`https://ftp.apnic.net/apnic/whois/`](https://ftp.apnic.net/apnic/whois/)
+- First, manually download two bulk Whois files: [`https://ftp.apnic.net/apnic/whois/`](https://ftp.apnic.net/apnic/whois/)
   - apnic.db.aut-num.gz
   - apnic.db.organisation.gz 
    
-- Next, query the live APNIC RDAP API to collect associated emails for each AS:
+- Then, run the extraction script to generate `as_info.json`:
+
+```bash
+python apnic_extract.py --date 250101
+```
+
+- Finally, query the live APNIC RDAP API to collect associated (filtered) domains for each AS and generate `as2domains.json`:
 
 ```bash
 python apnic_query.py --date 250101
@@ -79,18 +85,19 @@ Note: The query is performed online against the current APNIC database.
 The --date argument here controls the output directory (e.g., data/apnic/250101/)
 and must match the date/folder used to store the downloaded bulk WHOIS files.
 
-- Finally, run the extraction script to generate `as2domain.json` and `as_info.json`:
-
-```bash
-python apnic_extract.py --date 250101
-```
-
 #### (4) RIPE NCC
 
-- First, manually download the RIPE bulk Whois, which are later used to extract `as_info.json`: [`https://ftp.ripe.net/ripe/dbase/`](https://ftp.ripe.net/ripe/dbase/)
+- First, manually download the RIPE bulk Whois: [`https://ftp.ripe.net/ripe/dbase/`](https://ftp.ripe.net/ripe/dbase/)
   - ripe.db.gz
+
+- Then, run the extraction script to generate `as_info.json`:
+
+```bash
+python ripe_extract.py --date 250101
+```
+
    
-- Next, query the live RIPE Abuse Contact API to collect the abuse contact email for each AS.
+- Finally, query the live RIPE Abuse Contact API to collect the abuse contact email for each AS and generate `as2domains.json`.
 
   - To use the RIPEstat Data API, please follow the official [RIPE Data API usage guidelines](https://stat.ripe.net/docs/02.data-api/), which include:
 
@@ -107,11 +114,6 @@ Note: The query is performed online against the current RIPE database.
 The --date argument here controls the output directory (e.g., data/ripe/250101/)
 and must match the date/folder used to store the downloaded bulk WHOIS files.
 
-- Finally, run the extraction script to generate `as2domain.json` and `as_info.json`:
-
-```bash
-python ripe_extract.py --date 250101
-```
 
 #### (5) LACNIC
 
@@ -133,3 +135,123 @@ python lacnic_extract.py --date 250101
 ```
 
 
+### 2. 📥 Download and Process IPinfo Data
+
+Download and process IPinfo's public ASN data to extract domain mappings.
+
+- Manually download the IPinfo Lite ASN data from:  
+  [`https://ipinfo.io/lite`](https://ipinfo.io/lite)
+
+- Save it in the following folder structure:
+```text
+data/
+└── ipinfo/
+    └── 250101/
+        └── free-2025-01-01.asn.csv
+```
+
+- Then, run the extraction script to generate `as2domain.json`:
+
+```bash
+python ipinfo_extract.py --date 250101
+```
+
+### 3. 📥 Download and Process PeeringDB Data
+
+Download and process PeeringDB to extract AS to website mappings.
+
+- Manually download the PeeringDB data from:  
+  [`https://www.caida.org/catalog/datasets/peeringdb/`](https://www.caida.org/catalog/datasets/peeringdb/)
+
+- Save it in the following folder structure:
+```text
+data/
+└── peeringdb/
+    └── 250101/
+        └── peeringdb_2_dump_2025_01_01.json
+```
+
+- Then, run the extraction script to generate `as2web.json`:
+
+```bash
+python peeringdb_extract.py --date 250101
+```
+
+### 4. 📥 Collect AS2Web from AS-centered Sources
+
+This step aggregates domain information from **AS-centered sources** (Whois, PeeringDB, and IPinfo), applies fuzzy matching to identify the most relevant domain, and uses the `requests` library to check website accessibility.
+
+- Run the script to generate two files:
+
+  - `as_centered_as2web.json`: 
+    A dictionary where each key is an ASN. For each ASN, the value contains:
+    - `"Website"`: the URL of the most relevant domain (if accessible, with `https://` or `http://` prefix)
+    - `"Sources"`: a list of sources (`Whois`, `PeeringDB`, and/or `IPinfo`) that contributed the domain
+    - `"Accessible"`: a boolean (true/false) indicating whether the website is reachable via HTTP(S)
+
+  - `as_centered_noweb_as.json`: 
+    A list of ASNs for which no domain could be extracted from any of the three AS-centered sources.
+
+```bash
+python as_centered_extract.py --date 250101
+```
+
+- These files will be saved in the following directory:
+
+```text
+data/
+└── as_centered_sources/
+    └── 250101/
+```
+
+
+### 5. 📥 Query Perplexity AI
+
+This step leverages Perplexity AI's **Sonar-Pro model** to identify websites for organizations whose ASes either:
+
+- lack any domain from AS-centered sources, or  
+- have inaccessible websites.
+
+> 🔐 Please follow [Perplexity AI's official guide](https://docs.perplexity.ai/home) to:
+> - Set up billing
+> - Generate an API key
+
+Then, replace the API key placeholder in `perplexity_ai_query.py` with your actual key to begin querying.
+
+---
+
+- Run the script to generate the following files:
+
+  - `sonar_pro_responses_partial.json.gz`:  
+    This file is updated every 30 seconds to store intermediate query results (useful for recovery in case of interruption).
+
+  - `sonar_pro_responses_final.json.gz`:  
+    The final output file containing all completed responses.
+
+```bash
+python perplexity_ai_query.py --date 250101
+```
+
+These files are saved in:
+
+```text
+data/
+└── perplexity/
+    └── 250101/
+
+### 6. 📥 Generate Final AS2Web
+
+This step combines results from **AS-centered sources** and **Perplexity AI** to produce the final AS2Web dataset.
+
+- Run the following script to generate the final dataset:
+
+```bash
+python perplexity_ai_extract.py --date 250101
+```
+
+The outcome dataset is stored in
+
+```text
+data/
+└── as2web/
+    └── 250101/

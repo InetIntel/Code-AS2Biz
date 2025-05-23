@@ -4,7 +4,7 @@ import argparse
 import json
 import gzip
 import os
-from utils import find_relevant_domain, domain_filter_list
+from utils import domain_filter_list
 
 def extract_afrinic_as2domain(date, whois_path, output_path):
 
@@ -30,7 +30,7 @@ def extract_afrinic_as2domain(date, whois_path, output_path):
         if not found:
             as_noid.append(asn)
 
-    orgid_emails, orgid_name, orgid_nodomain = {}, {}, []
+    orgid_emails, orgid_name, org_cc, orgid_nodomain = {}, {}, {}, []
     for idx in typ_idx.get("organisation", []):
         items = blocks[idx].split("\n")
         orgid = items[0].split(":")[1].strip()
@@ -42,6 +42,8 @@ def extract_afrinic_as2domain(date, whois_path, output_path):
                     emails.add(parts[1].strip().lower())
             elif item.startswith("org-name:"):
                 orgid_name[orgid] = item.split(":")[1].strip()
+            elif item.startswith("country:"):
+                org_cc[orgid] = item.split(":")[1].strip()
         if emails:
             orgid_emails[orgid] = list(emails)
         else:
@@ -54,38 +56,29 @@ def extract_afrinic_as2domain(date, whois_path, output_path):
             emails = orgid_emails[orgid]
             domains = set()
             for email in emails:
-                domains.add(email.split("@")[1])
-
-            domain = find_relevant_domain(as_name.get(asn, ""), orgid_name.get(orgid, ""), domains)
-            as2domain[asn] = domain
+                domain = email.split("@")[1]
+                if domain not in domain_filter_list:
+                    domains.add(domain)
+            if domains:
+                as2domain[asn] = list(domains)
         else:
             as_nodomain.append(asn)
-            domain = ""
         as_org_info[asn] = {
             "asname": as_name.get(asn, ""),
             "orgid": orgid,
-            "orgname": orgid_name.get(orgid, "")
+            "orgname": orgid_name.get(orgid, ""),
+            "country": org_cc.get(orgid, "")
         }
 
     # Manual corrections: these ASes do not have associated email fields in org-objects.
     as2domain.update({
-        "11157": "www.lancet.co.za",
-        "22354": "www.udsm.ac.tz",
-        "36997": "www.infocom.co.ug",
-        "37110": "www.clubnet.mz",
+        "11157": ["lancet.co.za"],
+        "22354": ["udsm.ac.tz"],
+        "36997": ["infocom.co.ug"],
+        "37110": ["clubnet.mz"],
     })
 
-    print(f"ASes with domain (before cleaning): {len(as2domain)}")
-
-    # Remove unmeaningful domains
-    unmeaningful = [asn for asn, d in as2domain.items() if d in domain_filter_list]
-    print(len(unmeaningful))
-    for asn in unmeaningful:
-        del as2domain[asn]
-    
-    print(f"ASes with domain (after cleaning): {len(as2domain)}")
-
-    with open(output_path+"/as2domain.json", "w") as f:
+    with open(output_path+"/as2domains.json", "w") as f:
         json.dump(as2domain, f, indent=2)
     with open(output_path+"/as_info.json", "w") as f:
         json.dump(as_org_info, f, indent=2)

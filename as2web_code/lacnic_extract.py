@@ -23,31 +23,27 @@ def extract_lacnic_as2domain(date, input_dir, output_path):
         email_matches = re.findall(r"e-mail:\s+([\w\.-]+@[\w\.-]+)", whois_data)
         owner_match = re.search(r"owner:\s+(.+)", whois_data)
         owner = owner_match.group(1).strip() if owner_match else None
+        cc_match = re.search(r"country:\s+(.+)", whois_data)
+        cc = cc_match.group(1).strip() if cc_match else ""
         if email_matches:
-            domains = set(email.split("@")[1] for email in email_matches)
+            temp_domains = set(email.split("@")[1] for email in email_matches)
+            domains = set()
+            for domain in temp_domains:
+                if domain not in domain_filter_list:
+                    domains.add(domain)
+            if domains:
+                as2domain[asn] = list(domains)
             domains = list(domains)
-            if owner:
-                domain = find_relevant_domain("", owner, domains)
-                as2domain[asn] = domain
         else:
             asn_noemail.append(asn)
         as_org_info[asn] = {
             "asname": "",
             "orgid": "",
-            "orgname": owner
+            "orgname": owner,
+            "country": cc
         }
 
-    # print("Extracted domains:", len(as2domain), "; Need query:", len(need_query_as), "; No email ASes:", len(asn_noemail))
-    print(f"ASes with domain (before cleaning): {len(as2domain)}")
-
-    # Remove unmeaningful domains
-    unmeaningful = [asn for asn, d in as2domain.items() if d in domain_filter_list]
-    for asn in unmeaningful:
-        del as2domain[asn]
-
-    print(f"ASes with domain (after cleaning): {len(as2domain)}")
-
-    with open(output_path+"/as2domain.json", "w") as f:
+    with open(output_path+"/as2domains.json", "w") as f:
         json.dump(as2domain, f, indent=2)
     with open(output_path+"/as_info.json", "w") as f:
         json.dump(as_org_info, f, indent=2)
@@ -58,7 +54,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Extract AS to domain mapping from LACNIC Whois data.")
     parser.add_argument("--date", required=True, help="Date in yymmdd format (e.g., 250101)")
     parser.add_argument("--input_dir", default="data", help="Top-level input data directory (default: ./data)")
-    parser.add_argument("--output", default=None, help="Output path for cleaned JSON (default: data/Whois/lacnic/{date}/as2domain_cleaned.json)")
+    parser.add_argument("--output", default=None, help="Output path for cleaned JSON (default: data/lacnic/{date})")
     args = parser.parse_args()
 
     output_path = args.output or f"{args.input_dir}/lacnic/{args.date}"

@@ -23,8 +23,14 @@ data/
 ├── ripe/
 │   └── 250101/
 │       └── ripe.db.gz
-└── lacnic/
-    └── 250101/
+├── lacnic/
+│   └── 250101/
+├── ipinfo/
+│   └── 250101/
+│       └── free-2025-01-01.asn.csv
+├── peeringdb/
+│   └── 250101/
+│       └── peeringdb_2_dump_2025_01_01.json
 ```
 
 - `250101/` represents the snapshot date in `yymmdd` format (e.g., January 1, 2025).

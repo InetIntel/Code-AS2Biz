@@ -3,8 +3,8 @@ import time
 import json
 import argparse
 import datetime
-import utils
 import os
+from utils import domain_filter_list
 
 def get_abuse_contact(resource, sourceapp_id):
     url = "https://stat.ripe.net/data/abuse-contact-finder/data.json"
@@ -50,8 +50,9 @@ def main(asn_list, output_file, sourceapp_id):
                 got_email = True
                 email = emails[0]
                 domain = email.split("@")[1]
-                asn_email_map[asn] = domain
-                print(f"Emails for {asn}: {domain}")
+                if domain not in domain_filter_list:
+                    asn_email_map[asn] = [domain]
+                print(f"Domain for {asn}: {domain}")
             else:
                 asn_email_map[asn] = ""
         else:
@@ -64,7 +65,7 @@ def main(asn_list, output_file, sourceapp_id):
             
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Query RIPE RDAP to extract abuse contact emails.")
+    parser = argparse.ArgumentParser(description="Query RIPE Abuse Contact API to extract abuse contact emails.")
     parser.add_argument("--date", required=True, help="Date in yymmdd format (e.g., 250101)")
     parser.add_argument("--sourceapp", required=True, help="Your identifier for querying RIPE data-api.")
     args = parser.parse_args()
@@ -78,6 +79,6 @@ if __name__ == "__main__":
     # Search: RIPE ASes in our scope (in "assigned" status on 2025-01-01 and BGP active in 2024)
     asn_list = [key for key, value in scope.items() if value == "ripe"]
 
-    output_file = f"./data/ripe/{date}/ripe_asn_email_data.json"
+    output_file = f"./data/ripe/{date}/as2domains.json"
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     main(asn_list, output_file, id)
