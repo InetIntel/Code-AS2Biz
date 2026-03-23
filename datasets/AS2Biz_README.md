@@ -75,7 +75,7 @@ Each business label includes its provenance. Source values are:
   Assigned directly from the organization's official website after scraping and LLM classification.
 
 - `Inherit from ...`  
-  Inherited from sibling ASes belonging to the same organization. Only include Direct - Website business types from sibling ASNs that this ASN does not have. E.g., if an ASN is classified as ISP based on the website classification, even if its sibling ASN AS12345 also has ISP, we only show 'Direct - Website' without 'Inherit from AS12345'. 
+  Indicates that the business type is inherited from sibling ASes belonging to the same organization. Only sibling labels with source Direct - Website are considered for inheritance, and only when this ASN does not already have the same business type assigned directly. For example, if an ASN already has the label ISP from its own website classification, then the same ISP label from sibling AS12345 is not added as Inherit from AS12345.
 
 - `Direct - Wikipedia`  
   Assigned from Wikipedia scraping and classification in the fallback stage.
