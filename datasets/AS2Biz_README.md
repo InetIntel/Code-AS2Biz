@@ -187,3 +187,43 @@ taxonomy = [
     "Other - Individually Owned"
 ]
 ```
+
+# AS2Web Dataset
+
+For each snapshot month, the dataset stores:
+- metadata about the snapshot and models used
+- a mapping from ASN to its website URL
+- the provenance of each assigned URL
+
+The JSON structure is:
+
+```json
+{
+  "metadata": {
+    "snapshot_month": "{yyyy_mm}",
+    "web_search_setting": "{model}",
+  },
+  "data": {
+    "AS1": {
+      "url": "{url}",
+      "sources": "{sources}"
+    },
+  }
+}
+```
+
+## Source Values
+
+Source values are:
+
+- `Whois`  
+  The website comes from Whois.
+
+- `PeeringDB`  
+  The website comes from PeeringDB.
+
+- `IPinfo`  
+  The website comes from IPinfo.
+
+- `WebSearch`  
+  The website comes from AI-based web search.
