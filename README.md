@@ -3,6 +3,11 @@
 Code and prompts used to construct the AS2Web (AS-number → website) and AS2Biz
 (AS-number → business category) datasets.
 
+This code accompanies the paper *AS2Biz: Leveraging Web Presence and AI to
+Improve AS Business Classification*, in the Proceedings of the 2026 ACM Internet
+Measurement Conference (IMC '26). If you use it, please cite the paper — see
+[Citation](#citation).
+
 ## Scope of this release
 
 This repository contains **code only**, and it is **not a turnkey end-to-end
@@ -386,6 +391,30 @@ The datasets built with this code are released separately:
 
 - AS2Web: <https://github.com/InetIntel/Dataset-AS2Web>
 - AS2Biz: <https://github.com/InetIntel/Dataset-AS2Biz>
+
+## Citation
+
+If you use this code, or the AS2Web / AS2Biz datasets it produces, in academic
+work, please cite:
+
+```bibtex
+@inproceedings{chen2026as2biz,
+  title     = {{AS2Biz: Leveraging Web Presence and AI to Improve AS Business Classification}},
+  author    = {Chen, Zhiyi and Bischof, Zachary and Testart, Cecilia and Dainotti, Alberto},
+  booktitle = {Proceedings of the 2026 ACM Internet Measurement Conference (IMC '26)},
+  year      = {2026},
+  address   = {Karlsruhe, Germany},
+  publisher = {ACM},
+  isbn      = {979-8-4007-2327-8/2026/10},
+  doi       = {10.1145/3777912.3809155},
+  url       = {https://doi.org/10.1145/3777912.3809155},
+}
+```
+
+Machine-readable metadata is in [`CITATION.cff`](CITATION.cff). Note that the
+[LICENSE](LICENSE) separately requires publications built on these materials to
+cite the codebase and to be reported to the Internet Intelligence Lab
+(inetintel@cc.gatech.edu).
 
 ## License
 
