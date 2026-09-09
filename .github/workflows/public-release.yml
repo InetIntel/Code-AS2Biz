@@ -1,0 +1,30 @@
+name: public-release
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Check public-release hygiene
+        env:
+          PUBLIC_BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: bash scripts/check_public_release.sh
+      - name: Run standalone tests
+        run: |
+          fail=0
+          while IFS= read -r -d '' t; do
+            echo "== $t"
+            ( cd "$(dirname "$t")" && python "$(basename "$t")" ) || fail=1
+          done < <(find as2biz as2web -name 'test_*.py' -print0 | sort -z)
+          exit $fail

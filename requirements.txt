@@ -1,0 +1,19 @@
+pandas
+python-dateutil
+requests
+rapidfuzz
+tldextract
+warcio
+playwright
+html2text
+tiktoken
+openai
+python-dotenv
+tqdm
+
+# Optional — the crawler (as2biz/scraper.py) uses these if present:
+#   playwright-stealth   masks headless-browser fingerprints (see README →
+#                        "Responsible crawling"); omit it to disable
+#   langdetect           localize cookie-consent handling
+playwright-stealth
+langdetect
